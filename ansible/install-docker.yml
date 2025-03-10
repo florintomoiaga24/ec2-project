@@ -1,0 +1,33 @@
+- name: Instalare Doker si Deploy website
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}
+        dest: /usr/local/bin/docker-compose
+        mode: 'u+x,g+x'
+
+    - name: Creare website director
+      file:
+        path: /home/ubuntu/website
+        state: directory
+
+    - name: Copiaza fisiere website
+      copy:
+        src: ./website/
+        dest: /home/ubuntu/website/
+
+    - name: Run Docker container
+      command: docker run -d -p 80:80 -v /home/ubuntu/website:/usr/local/apache2/htdocs httpd
