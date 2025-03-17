@@ -23,7 +23,6 @@ pipeline {
                 echo "Using Subnet: $SUBNET_ID"
                 echo "Using Security Group: $SECURITY_GROUP_ID"
     
-                # Verificăm dacă există deja o instanță în rulare
             # Verificăm dacă există deja o instanță activă cu tag-ul "Instanta2"
             INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" \
                 "Name=tag:Name,Values=Instance2" --query 'Reservations[*].Instances[*].InstanceId' --output text)
