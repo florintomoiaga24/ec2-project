@@ -30,4 +30,4 @@
         dest: /home/ubuntu/website/
 
     - name: Run Docker container
-      command: docker run -d -p 80:80 -v /home/ubuntu/website:/usr/local/apache2/htdocs httpd
+      command: docker run -d -p 8091:80 -v /home/ubuntu/website:/usr/local/apache2/htdocs httpd
