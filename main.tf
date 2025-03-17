@@ -119,6 +119,6 @@ resource "aws_instance" "public_instance" {
 }
 
 # Elastic IP (optional pentru IP fix)
-resource "aws_eip" "eip_public_instance" {
-  instance = aws_instance.public_instance.id
-}
+#resource "aws_eip" "eip_public_instance" {
+#  instance = aws_instance.public_instance.id
+#}
