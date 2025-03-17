@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+    environment {
+        AWS_REGION = 'eu-central-1'
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/florintomoiaga24/ec2-project.git'
+            }
+        }
+        
+    stage('Create AWS EC2') {
+        steps {
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Creds']]) {
+                sh '''
+                # Definim VPC, Subnet și Security Group (aceleași ca la Jenkins)
+                VPC_ID="vpc-005098085ac0dd24c"
+                SUBNET_ID="subnet-06b7a7947c0708745"
+                SECURITY_GROUP_ID="sg-0b0a41960e5a8a18b"
+    
+                echo "Using VPC: $VPC_ID"
+                echo "Using Subnet: $SUBNET_ID"
+                echo "Using Security Group: $SECURITY_GROUP_ID"
+    
+                # Verificăm dacă există deja o instanță în rulare
+            # Verificăm dacă există deja o instanță activă cu tag-ul "Instanta2"
+            INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" \
+                "Name=tag:Name,Values=Instance2" --query 'Reservations[*].Instances[*].InstanceId' --output text)
+            
+            # Dacă nu există o instanță activă, se creează una nouă
+            if [ -z "$INSTANCE_ID" ] || [ "$INSTANCE_ID" == "None" ]; then
+                echo "Nicio instanță existentă găsită, creăm una nouă..."
+                INSTANCE_ID=$(aws ec2 run-instances \
+                    --image-id ami-07eef52105e8a2059 \
+                    --instance-type t2.micro \
+                    --key-name my_ssh_key \
+                    --security-group-ids $SECURITY_GROUP_ID \
+                    --subnet-id $SUBNET_ID \
+                    --count 1 \
+                    --region eu-central-1 \
+                    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Instance2}]' \
+                    --query 'Instances[0].InstanceId' --output text)
+                echo "Nouă instanță creată: $INSTANCE_ID"
+            else
+                echo "Folosim instanța existentă: $INSTANCE_ID"
+            fi
+            
+            # Obținem IP-ul instanței existente
+            INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
+                --query 'Reservations[0].Instances[0].PrivateIpAddress' --output text)
+            
+            if [ -z "$INSTANCE_IP" ]; then
+                echo "Eroare: Nu s-a putut obține IP-ul instanței!"
+                exit 1
+            fi
+            
+            echo "INSTANCE PRIVATE IP: $INSTANCE_IP"
+            echo $INSTANCE_IP > instance_ip.txt
+                '''
+            }
+        }
+    }
+  
+    }
+}
