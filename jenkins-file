@@ -44,18 +44,7 @@ pipeline {
             else
                 echo "Folosim instanța existentă: $INSTANCE_ID"
             fi
-            
-            # Obținem IP-ul instanței existente
-            INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
-                --query 'Reservations[0].Instances[0].PrivateIpAddress' --output text)
-            
-            if [ -z "$INSTANCE_IP" ]; then
-                echo "Eroare: Nu s-a putut obține IP-ul instanței!"
-                exit 1
-            fi
-            
-            echo "INSTANCE PRIVATE IP: $INSTANCE_IP"
-            echo $INSTANCE_IP > instance_ip.txt
+
                 '''
             }
         }
